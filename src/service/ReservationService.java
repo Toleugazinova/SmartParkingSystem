@@ -14,14 +14,17 @@ public class ReservationService {
         this.spotRepo = s; this.vehicleRepo = v; this.tariffRepo = t; this.resRepo = r;
     }
 
-    public String parkVehicle(String plate, String type) throws NoFreeSpotsException {
+    public String parkVehicleAtSpot(String spotNumber, String type, String plate)
+            throws NoFreeSpotsException {
+        ParkingSpot s = spotRepo.findBySpotNumber(spotNumber);
+        if (s == null || !s.isAvailable()) {
+            throw new NoFreeSpotsException("This spot is not available!");
+        }
         Vehicle v = vehicleRepo.findByPlate(plate);
         int vId = (v == null) ? vehicleRepo.createVehicle(plate, type) : v.getId();
-        ParkingSpot s = spotRepo.findFirstAvailable();
-        if (s == null) throw new NoFreeSpotsException("No free spots!");
         Tariff t = tariffRepo.getTariffBySpotType(s.getSpotType());
         resRepo.create(vId, s.getId(), t.getId());
         spotRepo.updateStatus(s.getId(), false);
-        return "Parked at " + s.getSpotNumber();
+        return "Parked at spot " + s.getSpotNumber();
     }
 }

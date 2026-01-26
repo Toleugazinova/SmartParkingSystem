@@ -35,15 +35,19 @@ public class SmartParkingSystem {
                         break;
                     case 3:
                         System.out.print("Choose spot: ");
-                        String p = scanner.nextLine();
-                        System.out.print("Type: ");
+                        String s = scanner.nextLine();
+                        System.out.print("Vehicle type: ");
                         String t = scanner.nextLine();
-                        System.out.println(resService.parkVehicle(p, t));
+                        System.out.print("Plate number: ");
+                        String p = scanner.nextLine();
+                        System.out.println(resService.parkVehicleAtSpot(s, t, p));
                         break;
                     case 4:
-                        System.out.print("Plate: ");
+                        System.out.print("Plate number: ");
                         p = scanner.nextLine();
-                        System.out.println(pricingService.calculateAndPay(p));
+                        System.out.print("Hours parked: ");
+                        int hours = scanner.nextInt();
+                        System.out.println(pricingService.calculateAndPay(p, hours));
                         break;
                     case 5:
                         return;

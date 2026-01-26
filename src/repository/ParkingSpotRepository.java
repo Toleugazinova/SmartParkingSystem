@@ -21,14 +21,25 @@ public class ParkingSpotRepository {
         } catch (Exception e) { System.out.println(e.getMessage()); }
     }
 
-    public ParkingSpot findFirstAvailable() {
+    public ParkingSpot findBySpotNumber(String spotNumber) {
         try (Connection con = db.getConnection();
-             Statement st = con.createStatement();
-             ResultSet rs = st.executeQuery("SELECT * FROM parking_spots WHERE is_available = true LIMIT 1")) {
+             PreparedStatement st = con.prepareStatement(
+                     "SELECT * FROM parking_spots WHERE spot_number = ?")) {
+            st.setString(1, spotNumber);
+            ResultSet rs = st.executeQuery();
+
             if (rs.next()) {
-                return new ParkingSpot(rs.getInt("id"), rs.getString("spot_number"), rs.getBoolean("is_available"), rs.getString("spot_type"));
+                return new ParkingSpot(
+                        rs.getInt("id"),
+                        rs.getString("spot_number"),
+                        rs.getBoolean("is_available"),
+                        rs.getString("spot_type")
+                );
             }
-        } catch (Exception e) { System.out.println(e.getMessage()); }
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
         return null;
     }
 
