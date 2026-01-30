@@ -5,7 +5,7 @@ import service.*;
 import java.util.Scanner;
 
 public class SmartParkingSystem {
-    private final IDatabase db = new DatabaseConnection();
+    private final DatabaseConnection db = new DatabaseConnection();
     private final ParkingSpotRepository spotRepo = new ParkingSpotRepository(db);
     private final TariffRepository tariffRepo = new TariffRepository(db);
     private final VehicleRepository vehicleRepo = new VehicleRepository(db);
