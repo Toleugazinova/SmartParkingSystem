@@ -6,7 +6,6 @@ import exception.*; // Подключаем исключения
 import java.util.Scanner;
 
 public class SmartParkingSystem {
-    // SINGLETON: Получаем экземпляр базы
     private final IDatabase db = DatabaseConnection.getInstance();
 
     private final ParkingSpotRepository spotRepo = new ParkingSpotRepository(db);
@@ -32,7 +31,7 @@ public class SmartParkingSystem {
                 switch (choice) {
                     case 1 -> spotRepo.getAll().stream()
                             .filter(s -> s.isAvailable())
-                            .forEach(System.out::println); // Lambda method reference
+                            .forEach(System.out::println);
                     case 2 -> tariffRepo.printAllTariffs();
                     case 3 -> {
                         System.out.print("Plate: "); String p = scanner.nextLine();
@@ -52,6 +51,4 @@ public class SmartParkingSystem {
             }
         }
     }
-
-    public static void main(String[] args) { new SmartParkingSystem().start(); }
 }
