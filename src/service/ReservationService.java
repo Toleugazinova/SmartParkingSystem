@@ -1,7 +1,7 @@
 package service;
 
 import entity.*;
-import exception.*;
+import exception.ReservationException;
 import pattern.ReservationBuilder;
 import repository.*;
 import java.sql.Timestamp;
@@ -14,35 +14,36 @@ public class ReservationService {
     private final ReservationRepository resRepo;
 
     public ReservationService(ParkingSpotRepository s, VehicleRepository v, TariffRepository t, ReservationRepository r) {
-        this.spotRepo = s; this.vehicleRepo = v; this.tariffRepo = t; this.resRepo = r;
+        this.spotRepo = s;
+        this.vehicleRepo = v;
+        this.tariffRepo = t;
+        this.resRepo = r;
     }
 
     public String parkVehicle(String plate, String type) throws ReservationException {
-        if (plate == null || plate.isEmpty()) {
-            throw new ReservationException("Invalid plate number!");
-        }
+        if (plate == null || plate.isEmpty()) throw new ReservationException("Plate is empty");
 
         Vehicle v = vehicleRepo.findByPlate(plate);
         int vId = (v == null) ? vehicleRepo.createVehicle(plate, type) : v.getId();
 
         List<ParkingSpot> allSpots = spotRepo.getAll();
         ParkingSpot freeSpot = allSpots.stream()
-                .filter(ParkingSpot::isAvailable) // Лямбда выражение
+                .filter(ParkingSpot::isAvailable)
                 .findFirst()
-                .orElseThrow(() -> new ReservationException("No free spots available (Stream Filter)!"));
+                .orElseThrow(() -> new ReservationException("No free spots"));
 
         Tariff t = tariffRepo.getTariffBySpotType(freeSpot.getSpotType());
 
-        Reservation reservation = new ReservationBuilder()
+        Reservation res = new ReservationBuilder()
                 .setVehicleId(vId)
                 .setSpotId(freeSpot.getId())
                 .setTariffId(t.getId())
                 .setStartTime(new Timestamp(System.currentTimeMillis()))
                 .build();
 
-        resRepo.create(reservation.getId(), freeSpot.getId(), t.getId());
+        resRepo.create(vId, freeSpot.getId(), t.getId());
         spotRepo.updateStatus(freeSpot.getId(), false);
 
-        return "Success! Parked at " + freeSpot.getSpotNumber();
+        return "Parked at " + freeSpot.getSpotNumber();
     }
 }
