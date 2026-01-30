@@ -1,36 +1,49 @@
-package pattern;
+package repository;
 
-import entity.Reservation;
-import java.sql.Timestamp;
+import interfaces.IDatabase;
+import entity.ParkingSpot;
+import interfaces.IRepository;
+import pattern.ParkingSpotFactory;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ReservationBuilder {
-    private int id;
-    private int vehicleId;
-    private int spotId;
-    private int tariffId;
-    private Timestamp startTime;
+public class ParkingSpotRepository implements IRepository<ParkingSpot> {
+    private final IDatabase db;
 
-    public ReservationBuilder setVehicleId(int vehicleId) {
-        this.vehicleId = vehicleId;
-        return this;
+    public ParkingSpotRepository(IDatabase db) {
+        this.db = db;
     }
 
-    public ReservationBuilder setSpotId(int spotId) {
-        this.spotId = spotId;
-        return this;
+    @Override
+    public List<ParkingSpot> getAll() {
+        List<ParkingSpot> spots = new ArrayList<>();
+        try (Connection con = db.getConnection();
+             Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery("SELECT * FROM parking_spots")) {
+            while (rs.next()) {
+                // Использование FACTORY
+                ParkingSpot spot = ParkingSpotFactory.createSpot(
+                        rs.getInt("id"),
+                        rs.getString("spot_number"),
+                        rs.getBoolean("is_available"),
+                        rs.getString("spot_type")
+                );
+                spots.add(spot);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return spots;
     }
 
-    public ReservationBuilder setTariffId(int tariffId) {
-        this.tariffId = tariffId;
-        return this;
-    }
+    @Override
+    public ParkingSpot findById(int id) { return null; } // Заглушка
 
-    public ReservationBuilder setStartTime(Timestamp startTime) {
-        this.startTime = startTime;
-        return this;
-    }
-
-    public Reservation build() {
-        return new Reservation(0, vehicleId, spotId, tariffId, startTime);
+    public void updateStatus(int id, boolean available) {
+        try (Connection con = db.getConnection();
+             PreparedStatement st = con.prepareStatement("UPDATE parking_spots SET is_available = ? WHERE id = ?")) {
+            st.setBoolean(1, available);
+            st.setInt(2, id);
+            st.executeUpdate();
+        } catch (Exception e) { e.printStackTrace(); }
     }
 }

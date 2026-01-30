@@ -3,7 +3,6 @@ package pattern;
 import entity.Reservation;
 import java.sql.Timestamp;
 
-// PATTERN: Builder
 public class ReservationBuilder {
     private int id;
     private int vehicleId;

@@ -41,8 +41,4 @@ public class SmartParkingSystem {
             }
         }
     }
-
-    public static void main(String[] args) {
-        new SmartParkingSystem().start();
-    }
 }
