@@ -30,7 +30,8 @@ public class SmartParkingSystem {
                     }
                     case 3 -> {
                         System.out.print("Plate: "); String p = scanner.nextLine();
-                        System.out.println(pricingService.calculateAndPay(p));
+                        System.out.print("Hours "); int h = scanner.nextInt();
+                        System.out.println(pricingService.calculateAndPay(p, h));
                     }
                     case 4 -> System.exit(0);
                 }

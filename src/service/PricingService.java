@@ -14,7 +14,7 @@ public class PricingService {
         this.resRepo = r; this.tariffRepo = t; this.spotRepo = s; this.vehicleRepo = v;
     }
 
-    public String calculateAndPay(String plate)
+    public String calculateAndPay(String plate, int hours)
             throws InvalidVehiclePlateException {
 
         Vehicle v = vehicleRepo.findByPlate(plate);
