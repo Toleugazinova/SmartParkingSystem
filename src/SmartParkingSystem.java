@@ -1,19 +1,23 @@
-import edu.aitu.oop3.db.DatabaseConnection;
+import edu.aitu.oop3.db.PostgresDB;
+import exception.NoFreeSpotsException;
 import interfaces.IDatabase;
 import repository.*;
 import service.*;
 import entity.ParkingSpot;
+import exception.InvalidVehiclePlateException;
+import exception.NoFreeSpotsException;
 import exception.ReservationException;
 import java.util.Scanner;
 
 public class SmartParkingSystem {
-    private final IDatabase db = new DatabaseConnection();
+    private final IDatabase db = PostgresDB.getInstance();
     private final ParkingSpotRepository spotRepo = new ParkingSpotRepository(db);
     private final TariffRepository tariffRepo = new TariffRepository(db);
     private final VehicleRepository vehicleRepo = new VehicleRepository(db);
     private final ReservationRepository resRepo = new ReservationRepository(db);
     private final ReservationService resService = new ReservationService(spotRepo, vehicleRepo, tariffRepo, resRepo);
     private final PricingService pricingService = new PricingService(resRepo, tariffRepo, spotRepo, vehicleRepo);
+    private final ParkingLotManager lotManager = ParkingLotManager.getInstance(spotRepo);
     private final Scanner scanner = new Scanner(System.in);
 
     public void start() {
@@ -25,7 +29,9 @@ public class SmartParkingSystem {
                 int choice = Integer.parseInt(scanner.nextLine());
                 switch (choice) {
                     case 1:
-                        spotRepo.getAll().stream().filter(ParkingSpot::isAvailable).forEach(System.out::println);
+                        lotManager.getAvailableSpots().getItems().stream()
+                                .filter(ParkingSpot::isAvailable)
+                                .forEach(System.out::println);
                         break;
                     case 2:
                        tariffRepo.printAllTariffs();
@@ -39,7 +45,7 @@ public class SmartParkingSystem {
                     case 5:
                         return;
                 }
-            } catch (ReservationException e) {
+            } catch (ReservationException | InvalidVehiclePlateException | NoFreeSpotsException e) {
                 System.out.println("Error: " + e.getMessage());
             } catch (Exception e) {
                 System.out.println("System error occurred");
@@ -54,7 +60,7 @@ public class SmartParkingSystem {
         System.out.println("4. Parking fee");
         System.out.println("5. Quit");
     }
-    private void parkVehicle() throws ReservationException {
+    private void parkVehicle() throws ReservationException, InvalidVehiclePlateException, NoFreeSpotsException {
         System.out.print("Spot number: ");
         String s = scanner.nextLine();
         System.out.print("Plate number: ");

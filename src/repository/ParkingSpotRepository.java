@@ -1,14 +1,16 @@
 package repository;
 
 import interfaces.IDatabase;
+import interfaces.IParkingSpotRepository;
+import entity.ListResult;
 import entity.ParkingSpot;
 import interfaces.IRepository;
-import pattern.ParkingSpotFactory;
+import entity.ListResult;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ParkingSpotRepository implements IRepository<ParkingSpot> {
+public class ParkingSpotRepository implements IParkingSpotRepository {
     private final IDatabase db;
 
     public ParkingSpotRepository(IDatabase db) {
@@ -22,7 +24,7 @@ public class ParkingSpotRepository implements IRepository<ParkingSpot> {
              Statement st = con.createStatement();
              ResultSet rs = st.executeQuery("SELECT * FROM parking_spots")) {
             while (rs.next()) {
-                // Использование FACTORY
+
                 ParkingSpot spot = ParkingSpotFactory.createSpot(
                         rs.getInt("id"),
                         rs.getString("spot_number"),
@@ -34,10 +36,31 @@ public class ParkingSpotRepository implements IRepository<ParkingSpot> {
         } catch (Exception e) { e.printStackTrace(); }
         return spots;
     }
+    @Override
+    public ListResult<ParkingSpot> findAvailable() {
+        List<ParkingSpot> spots = new ArrayList<>();
+        try (Connection con = db.getConnection();
+             PreparedStatement st = con.prepareStatement("SELECT * FROM parking_spots WHERE is_available = true")) {
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                ParkingSpot spot = ParkingSpotFactory.createSpot(
+                        rs.getInt("id"),
+                        rs.getString("spot_number"),
+                        rs.getBoolean("is_available"),
+                        rs.getString("spot_type")
+                );
+                spots.add(spot);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ListResult<>(spots);
+    }
 
     @Override
     public ParkingSpot findById(int id) { return null; } // Заглушка
 
+    @Override
     public void updateStatus(int id, boolean available) {
         try (Connection con = db.getConnection();
              PreparedStatement st = con.prepareStatement("UPDATE parking_spots SET is_available = ? WHERE id = ?")) {

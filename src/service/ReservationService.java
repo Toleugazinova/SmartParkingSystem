@@ -2,33 +2,40 @@ package service;
 
 import entity.*;
 import exception.ReservationException;
-import pattern.ReservationBuilder;
 import repository.*;
-import java.sql.Timestamp;
-import java.util.List;
+import exception.InvalidVehiclePlateException;
+import exception.NoFreeSpotsException;
 
 public class ReservationService {
     private final ParkingSpotRepository spotRepo;
     private final VehicleRepository vehicleRepo;
     private final TariffRepository tariffRepo;
     private final ReservationRepository resRepo;
+    private final ParkingLotManager lotManager;
+
 
     public ReservationService(ParkingSpotRepository s, VehicleRepository v, TariffRepository t, ReservationRepository r) {
         this.spotRepo = s;
         this.vehicleRepo = v;
         this.tariffRepo = t;
         this.resRepo = r;
+        this.lotManager = ParkingLotManager.getInstance(s);
     }
 
-    public String parkVehicle(String spotNumber, String plate, String type) throws ReservationException {
-        if (plate == null || plate.isEmpty()) {
-            throw new ReservationException("Plate number cannot be empty");
+    public String parkVehicle(String spotNumber, String plate, String type)
+            throws ReservationException, InvalidVehiclePlateException, NoFreeSpotsException {
+        if (plate == null || plate.isBlank()) {
+            throw new InvalidVehiclePlateException("invalid vehicle plate");
+        }
+
+        if (lotManager.getAvailableSpots().getTotal() == 0) {
+            throw new NoFreeSpotsException("no free spots");
         }
 
         ParkingSpot selectedSpot = spotRepo.getAll().stream()
                 .filter(s -> s.getSpotNumber().equals(spotNumber) && s.isAvailable())
                 .findFirst()
-                .orElseThrow(() -> new ReservationException("Spot #" + spotNumber + " is not available or does not exist"));
+                .orElseThrow(() -> new NoFreeSpotsException("no free spots"));
 
         Tariff tariff = tariffRepo.getTariffBySpotType(selectedSpot.getSpotType());
 
@@ -37,6 +44,9 @@ public class ReservationService {
         }
 
         Vehicle vehicle = vehicleRepo.findByPlate(plate);
+        if (vehicle != null && resRepo.findActiveByVehicle(vehicle.getId()) != null) {
+            throw new ReservationException("reservation already active or expired");
+        }
         int vehicleId = (vehicle == null) ? vehicleRepo.createVehicle(plate, type) : vehicle.getId();
 
         resRepo.create(vehicleId, selectedSpot.getId(), tariff.getId());

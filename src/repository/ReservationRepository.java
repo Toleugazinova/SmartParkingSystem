@@ -1,16 +1,18 @@
 package repository;
 
 import interfaces.IDatabase;
-import entity.Reservation;
+import interfaces.IReservationRepository;
+import pattern.ReservationBuilder;
 import java.sql.*;
 
-public class ReservationRepository {
+public class ReservationRepository implements IReservationRepository {
     private final IDatabase db;
 
     public ReservationRepository(IDatabase db) {
         this.db = db;
     }
 
+    @Override
     public void create(int vId, int sId, int tId) {
         try (Connection con = db.getConnection();
              PreparedStatement st = con.prepareStatement("INSERT INTO reservations (vehicle_id, parking_spot_id, tariff_id, start_time, status) VALUES (?, ?, ?, now(), 'Active')")) {
@@ -21,6 +23,7 @@ public class ReservationRepository {
         } catch (Exception e) { System.out.println(e.getMessage()); }
     }
 
+    @Override
     public Reservation findActiveByVehicle(int vId) {
         try (Connection con = db.getConnection();
              PreparedStatement st = con.prepareStatement("SELECT * FROM reservations WHERE vehicle_id = ? AND status = 'Active'")) {
@@ -31,6 +34,7 @@ public class ReservationRepository {
         return null;
     }
 
+    @Override
     public void close(int id) {
         try (Connection con = db.getConnection();
              PreparedStatement st = con.prepareStatement("UPDATE reservations SET end_time = now(), status = 'Finished' WHERE id = ?")) {

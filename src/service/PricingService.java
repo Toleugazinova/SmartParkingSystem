@@ -2,7 +2,10 @@ package service;
 
 import entity.*;
 import exception.InvalidVehiclePlateException;
+import pattern.ReservationBuilder;
 import repository.*;
+import exception.ReservationException;
+import pattern.InvoiceBuilder;
 
 public class PricingService {
     private final ReservationRepository resRepo;
@@ -18,20 +21,27 @@ public class PricingService {
     }
 
     public String calculateAndPay(String plate, int hours)
-            throws InvalidVehiclePlateException {
+            throws InvalidVehiclePlateException, ReservationException {
 
         Vehicle v = vehicleRepo.findByPlate(plate);
-        if (v == null) throw new InvalidVehiclePlateException("Vehicle not found");
+        if (v == null) throw new InvalidVehiclePlateException("invalid vehicle plate");
 
-        Reservation r = resRepo.findActiveByVehicle(v.getId());
-        if (r == null) return "No active session";
+        ReservationBuilder r = resRepo.findActiveByVehicle(v.getId());
+        if (r == null) throw new ReservationException("reservation already active or expired");
 
         double pricePerHour = tariffRepo.getPriceById(r.getTariffId());
         double total = hours * pricePerHour;
 
         resRepo.close(r.getId());
-        spotRepo.updateStatus(r.getParkingSpotId(), true);
+        spotRepo.updateStatus(r.getSpotId(), true);
 
-        return "Total: " + total + " KZT";
+        return new InvoiceBuilder()
+                .setPlateNumber(plate)
+                .setHours(hours)
+                .setTotalAmount(total)
+                .setStartTime(r.getStartTime())
+                .setEndTime(new java.sql.Timestamp(System.currentTimeMillis()))
+                .build()
+                .toString();
     }
 }

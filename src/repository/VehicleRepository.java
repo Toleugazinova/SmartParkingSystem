@@ -1,16 +1,18 @@
 package repository;
 
 import interfaces.IDatabase;
+import interfaces.IVehicleRepository;
 import entity.Vehicle;
 import java.sql.*;
 
-public class VehicleRepository {
+public class VehicleRepository implements IVehicleRepository {
     private final IDatabase db;
 
     public VehicleRepository(IDatabase db) {
         this.db = db;
     }
 
+    @Override
     public Vehicle findByPlate(String plate) {
         try (Connection con = db.getConnection();
              PreparedStatement st = con.prepareStatement("SELECT * FROM vehicles WHERE plate_number = ?")) {
@@ -21,6 +23,7 @@ public class VehicleRepository {
         return null;
     }
 
+    @Override
     public int createVehicle(String plate, String type) {
         try (Connection con = db.getConnection();
              PreparedStatement st = con.prepareStatement("INSERT INTO vehicles (plate_number, vehicle_type) VALUES (?, ?) RETURNING id")) {

@@ -1,16 +1,18 @@
 package repository;
 
 import interfaces.IDatabase;
+import interfaces.ITariffRepository;
 import entity.Tariff;
 import java.sql.*;
 
-public class TariffRepository {
+public class TariffRepository implements ITariffRepository {
     private final IDatabase db;
 
     public TariffRepository(IDatabase db) {
         this.db = db;
     }
 
+    @Override
     public void printAllTariffs() {
         try (Connection con = db.getConnection();
              Statement st = con.createStatement();
@@ -21,6 +23,7 @@ public class TariffRepository {
         } catch (Exception e) { System.out.println(e.getMessage()); }
     }
 
+    @Override
     public Tariff getTariffBySpotType(String type) {
         try (Connection con = db.getConnection();
              PreparedStatement st = con.prepareStatement("SELECT * FROM tariffs WHERE spot_type = ?")) {
@@ -31,6 +34,7 @@ public class TariffRepository {
         return null;
     }
 
+    @Override
     public double getPriceById(int id) {
         try (Connection con = db.getConnection();
              PreparedStatement st = con.prepareStatement("SELECT price_per_hour FROM tariffs WHERE id = ?")) {
