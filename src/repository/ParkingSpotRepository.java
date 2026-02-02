@@ -1,11 +1,10 @@
 package repository;
 
-import interfaces.IDatabase;
-import interfaces.IParkingSpotRepository;
 import entity.ListResult;
 import entity.ParkingSpot;
-import interfaces.IRepository;
-import entity.ListResult;
+import interfaces.IDatabase;
+import interfaces.IParkingSpotRepository;
+import pattern.ParkingSpotFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;

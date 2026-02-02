@@ -1,8 +1,8 @@
 package repository;
 
+import entity.Reservation;
 import interfaces.IDatabase;
 import interfaces.IReservationRepository;
-import pattern.ReservationBuilder;
 import java.sql.*;
 
 public class ReservationRepository implements IReservationRepository {
