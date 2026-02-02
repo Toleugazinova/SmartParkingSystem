@@ -11,7 +11,10 @@ public class PricingService {
     private final VehicleRepository vehicleRepo;
 
     public PricingService(ReservationRepository r, TariffRepository t, ParkingSpotRepository s, VehicleRepository v) {
-        this.resRepo = r; this.tariffRepo = t; this.spotRepo = s; this.vehicleRepo = v;
+        this.resRepo = r;
+        this.tariffRepo = t;
+        this.spotRepo = s;
+        this.vehicleRepo = v;
     }
 
     public String calculateAndPay(String plate, int hours)

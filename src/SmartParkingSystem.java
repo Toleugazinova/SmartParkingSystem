@@ -7,7 +7,7 @@ import exception.ReservationException;
 import java.util.Scanner;
 
 public class SmartParkingSystem {
-    private final IDatabase db = DatabaseConnection.getInstance();
+    private final IDatabase db = new DatabaseConnection();
     private final ParkingSpotRepository spotRepo = new ParkingSpotRepository(db);
     private final TariffRepository tariffRepo = new TariffRepository(db);
     private final VehicleRepository vehicleRepo = new VehicleRepository(db);
@@ -18,22 +18,26 @@ public class SmartParkingSystem {
 
     public void start() {
         while (true) {
-            System.out.println("\n1. Show Spots\n2. Park\n3. Checkout\n4. Exit");
+            System.out.println();
+            printMenu();
             try {
+                System.out.print("Enter choice: ");
                 int choice = Integer.parseInt(scanner.nextLine());
                 switch (choice) {
-                    case 1 -> spotRepo.getAll().stream().forEach(System.out::println);
-                    case 2 -> {
-                        System.out.print("Plate: "); String p = scanner.nextLine();
-                        System.out.print("Type: "); String t = scanner.nextLine();
-                        System.out.println(resService.parkVehicle(p, t));
-                    }
-                    case 3 -> {
-                        System.out.print("Plate: "); String p = scanner.nextLine();
-                        System.out.print("Hours "); int h = scanner.nextInt();
-                        System.out.println(pricingService.calculateAndPay(p, h));
-                    }
-                    case 4 -> System.exit(0);
+                    case 1:
+                        spotRepo.getAll().stream().filter(ParkingSpot::isAvailable).forEach(System.out::println);
+                        break;
+                    case 2:
+                       tariffRepo.printAllTariffs();
+                       break;
+                    case 3:
+                        parkVehicle();
+                        break;
+                    case 4:
+                        calculateParkingFee();
+                        break;
+                    case 5:
+                        return;
                 }
             } catch (ReservationException e) {
                 System.out.println("Error: " + e.getMessage());
@@ -41,5 +45,28 @@ public class SmartParkingSystem {
                 System.out.println("System error occurred");
             }
         }
+    }
+    private void printMenu() {
+        System.out.println("Smart Parking System");
+        System.out.println("1. Print all available spots");
+        System.out.println("2. Print tariffs");
+        System.out.println("3. Park vehicle");
+        System.out.println("4. Parking fee");
+        System.out.println("5. Quit");
+    }
+    private void parkVehicle() throws ReservationException{
+        System.out.print("Plate number: ");
+        String p = scanner.nextLine();
+        System.out.print("Vehicle type: ");
+        String t = scanner.nextLine();
+        String result = resService.parkVehicle(p, t);
+        System.out.println(result);
+    }
+    private void calculateParkingFee() throws Exception{
+        System.out.print("Plate: ");
+        String p = scanner.nextLine();
+        System.out.print("Hours: ");
+        int h = scanner.nextInt();
+        System.out.println(pricingService.calculateAndPay(p, h));
     }
 }

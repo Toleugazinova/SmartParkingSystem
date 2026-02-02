@@ -1,5 +1,7 @@
 package exception;
 
-public class InvalidVehiclePlateException extends Exception {
-    public InvalidVehiclePlateException(String m) { super(m); }
+public class InvalidVehiclePlateException extends RuntimeException {
+    public InvalidVehiclePlateException(String m) {
+        super(m);
+    }
 }
