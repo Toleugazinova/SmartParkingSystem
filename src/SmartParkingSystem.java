@@ -54,19 +54,28 @@ public class SmartParkingSystem {
         System.out.println("4. Parking fee");
         System.out.println("5. Quit");
     }
-    private void parkVehicle() throws ReservationException{
+    private void parkVehicle() throws ReservationException {
+        System.out.print("Spot number: ");
+        String s = scanner.nextLine();
         System.out.print("Plate number: ");
         String p = scanner.nextLine();
         System.out.print("Vehicle type: ");
         String t = scanner.nextLine();
-        String result = resService.parkVehicle(p, t);
+
+        String result = resService.parkVehicle(s, p, t);
         System.out.println(result);
     }
-    private void calculateParkingFee() throws Exception{
-        System.out.print("Plate: ");
+    private void calculateParkingFee() throws Exception {
+        System.out.print("Plate number: ");
         String p = scanner.nextLine();
         System.out.print("Hours: ");
-        int h = scanner.nextInt();
+        String hoursInput = scanner.nextLine();
+
+        if (hoursInput.isEmpty()) {
+            System.out.println("Error: Hours cannot be empty");
+            return;
+        }
+        int h = Integer.parseInt(hoursInput);
         System.out.println(pricingService.calculateAndPay(p, h));
     }
 }

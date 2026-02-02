@@ -20,30 +20,29 @@ public class ReservationService {
         this.resRepo = r;
     }
 
-    public String parkVehicle(String plate, String type) throws ReservationException {
-        if (plate == null || plate.isEmpty()) throw new ReservationException("Plate is empty");
+    public String parkVehicle(String spotNumber, String plate, String type) throws ReservationException {
+        if (plate == null || plate.isEmpty()) {
+            throw new ReservationException("Plate number cannot be empty");
+        }
 
-        Vehicle v = vehicleRepo.findByPlate(plate);
-        int vId = (v == null) ? vehicleRepo.createVehicle(plate, type) : v.getId();
-
-        List<ParkingSpot> allSpots = spotRepo.getAll();
-        ParkingSpot freeSpot = allSpots.stream()
-                .filter(ParkingSpot::isAvailable)
+        ParkingSpot selectedSpot = spotRepo.getAll().stream()
+                .filter(s -> s.getSpotNumber().equals(spotNumber) && s.isAvailable())
                 .findFirst()
-                .orElseThrow(() -> new ReservationException("No free spots"));
+                .orElseThrow(() -> new ReservationException("Spot #" + spotNumber + " is not available or does not exist"));
 
-        Tariff t = tariffRepo.getTariffBySpotType(freeSpot.getSpotType());
+        Tariff tariff = tariffRepo.getTariffBySpotType(selectedSpot.getSpotType());
 
-        Reservation res = new ReservationBuilder()
-                .setVehicleId(vId)
-                .setSpotId(freeSpot.getId())
-                .setTariffId(t.getId())
-                .setStartTime(new Timestamp(System.currentTimeMillis()))
-                .build();
+        if (tariff == null) {
+            throw new ReservationException("No tariff found for spot type: " + selectedSpot.getSpotType());
+        }
 
-        resRepo.create(vId, freeSpot.getId(), t.getId());
-        spotRepo.updateStatus(freeSpot.getId(), false);
+        Vehicle vehicle = vehicleRepo.findByPlate(plate);
+        int vehicleId = (vehicle == null) ? vehicleRepo.createVehicle(plate, type) : vehicle.getId();
 
-        return "Parked at " + freeSpot.getSpotNumber();
+        resRepo.create(vehicleId, selectedSpot.getId(), tariff.getId());
+
+        spotRepo.updateStatus(selectedSpot.getId(), false);
+
+        return "Vehicle parked at spot №" + spotNumber;
     }
 }

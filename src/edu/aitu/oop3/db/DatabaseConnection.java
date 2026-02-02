@@ -15,7 +15,7 @@ public class DatabaseConnection implements IDatabase{
     private static final String URL =
             "jdbc:postgresql://aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres?sslmode=require";
     private static final String USER =
-            "postgres.mrivkaqomaorywhzsntk";
+            "postgres.ycdxqgmrsyzfgojsbucb";
     private static final String PASSWORD = loadPassword();
 
     public DatabaseConnection() {
