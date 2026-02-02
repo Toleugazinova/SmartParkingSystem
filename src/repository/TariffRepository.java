@@ -25,13 +25,38 @@ public class TariffRepository implements ITariffRepository {
 
     @Override
     public Tariff getTariffBySpotType(String type) {
+        String normalizedType = normalizeType(type);
         try (Connection con = db.getConnection();
              PreparedStatement st = con.prepareStatement("SELECT * FROM tariffs WHERE spot_type = ?")) {
-            st.setString(1, type);
+            st.setString(1, normalizedType);
             ResultSet rs = st.executeQuery();
-            if (rs.next()) return new Tariff(rs.getInt("id"), rs.getString("spot_type"), rs.getDouble("price_per_hour"));
+            if (rs.next()) {
+                return new Tariff(rs.getInt("id"), rs.getString("spot_type"), rs.getDouble("price_per_hour"));
+            }
+
+            if ("disabled".equals(normalizedType)) {
+                return findStandardTariff(con);
+            }
         } catch (Exception e) { System.out.println(e.getMessage()); }
         return null;
+    }
+
+    private Tariff findStandardTariff(Connection con) throws SQLException {
+        try (PreparedStatement fallback = con.prepareStatement("SELECT * FROM tariffs WHERE spot_type = ?")) {
+            fallback.setString(1, "standard");
+            ResultSet rs = fallback.executeQuery();
+            if (rs.next()) {
+                return new Tariff(rs.getInt("id"), rs.getString("spot_type"), rs.getDouble("price_per_hour"));
+            }
+        }
+        return null;
+    }
+
+    private String normalizeType(String type) {
+        if (type == null || type.isBlank()) {
+            return "standard";
+        }
+        return type.trim().toLowerCase();
     }
 
     @Override
