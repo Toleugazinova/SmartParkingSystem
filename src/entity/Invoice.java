@@ -39,6 +39,6 @@ public class Invoice {
 
     @Override
     public String toString() {
-        return "Invoice{plate='" + plateNumber + "', hours=" + hours + ", total=" + totalAmount + " KZT}";
+        return "Invoice [plate ='" + plateNumber + "', hours =" + hours + ", total =" + totalAmount + " KZT]";
     }
 }

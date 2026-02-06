@@ -27,7 +27,7 @@ public class TariffRepository implements ITariffRepository {
     public Tariff getTariffBySpotType(String type) {
         String normalizedType = normalizeType(type);
         try (Connection con = db.getConnection();
-             PreparedStatement st = con.prepareStatement("SELECT * FROM tariffs WHERE spot_type = ?")) {
+             PreparedStatement st = con.prepareStatement("SELECT * FROM tariffs WHERE LOWER(spot_type) = ?")) {
             st.setString(1, normalizedType);
             ResultSet rs = st.executeQuery();
             if (rs.next()) {
@@ -42,7 +42,7 @@ public class TariffRepository implements ITariffRepository {
     }
 
     private Tariff findStandardTariff(Connection con) throws SQLException {
-        try (PreparedStatement fallback = con.prepareStatement("SELECT * FROM tariffs WHERE spot_type = ?")) {
+        try (PreparedStatement fallback = con.prepareStatement("SELECT * FROM tariffs WHERE LOWER(spot_type) = ?")) {
             fallback.setString(1, "standard");
             ResultSet rs = fallback.executeQuery();
             if (rs.next()) {

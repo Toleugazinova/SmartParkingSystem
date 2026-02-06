@@ -8,6 +8,19 @@ import exception.InvalidVehiclePlateException;
 import exception.NoFreeSpotsException;
 import exception.ReservationException;
 import java.util.Scanner;
+import component.MonitoringComponent;
+import component.PaymentComponent;
+import component.ReportingComponent;
+import component.ReservationComponent;
+import interfaces.IDatabase;
+import repository.ParkingSpotRepository;
+import repository.ReservationRepository;
+import repository.TariffRepository;
+import repository.VehicleRepository;
+import service.ParkingLotManager;
+import service.PricingService;
+import service.ReservationService;
+import java.util.Scanner;
 
 public class SmartParkingSystem {
     private final IDatabase db = PostgresDB.getInstance();
@@ -18,6 +31,10 @@ public class SmartParkingSystem {
     private final ReservationService resService = new ReservationService(spotRepo, vehicleRepo, tariffRepo, resRepo);
     private final PricingService pricingService = new PricingService(resRepo, tariffRepo, spotRepo, vehicleRepo);
     private final ParkingLotManager lotManager = ParkingLotManager.getInstance(spotRepo);
+    private final ReservationComponent reservationComponent = new ReservationComponent(resService);
+    private final PaymentComponent paymentComponent = new PaymentComponent(pricingService);
+    private final MonitoringComponent monitoringComponent = new MonitoringComponent(lotManager);
+    private final ReportingComponent reportingComponent = new ReportingComponent(tariffRepo);
     private final Scanner scanner = new Scanner(System.in);
 
     public void start() {
@@ -29,12 +46,12 @@ public class SmartParkingSystem {
                 int choice = Integer.parseInt(scanner.nextLine());
                 switch (choice) {
                     case 1:
-                        lotManager.getAvailableSpots().getItems().stream()
+                        monitoringComponent.getAvailableSpots().getItems().stream()
                                 .filter(ParkingSpot::isAvailable)
                                 .forEach(System.out::println);
                         break;
                     case 2:
-                       tariffRepo.printAllTariffs();
+                        reportingComponent.printTariffs();
                        break;
                     case 3:
                         parkVehicle();
@@ -68,7 +85,7 @@ public class SmartParkingSystem {
         System.out.print("Vehicle type: ");
         String t = scanner.nextLine();
 
-        String result = resService.parkVehicle(s, p, t);
+        String result = reservationComponent.parkVehicle(s, p, t);
         System.out.println(result);
     }
     private void calculateParkingFee() throws Exception {
@@ -82,6 +99,6 @@ public class SmartParkingSystem {
             return;
         }
         int h = Integer.parseInt(hoursInput);
-        System.out.println(pricingService.calculateAndPay(p, h));
+        System.out.println(paymentComponent.calculateAndPay(p, h));
     }
 }
