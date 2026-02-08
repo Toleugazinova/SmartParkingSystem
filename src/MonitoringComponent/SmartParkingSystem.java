@@ -1,34 +1,27 @@
 package MonitoringComponent;
 
-import ReservationComponent.exception.NoFreeSpotsException;
 import DataAccessComponent.db.PostgresDB;
 import ReservationComponent.entity.ParkingSpot;
 import ReservationComponent.exception.InvalidVehiclePlateException;
 import ReservationComponent.exception.ReservationException;
 import java.util.Scanner;
 import ReservationComponent.repository.ParkingSpotRepository;
+import ReservationComponent.exception.NoFreeSpotsException;
 import ReservationComponent.repository.ReservationRepository;
 import PaymentComponent.repository.TariffRepository;
 import ReservationComponent.repository.VehicleRepository;
 import ReservationComponent.service.ParkingLotManager;
 import PaymentComponent.service.PricingService;
 import ReservationComponent.service.ReservationService;
-import repository.*;
-import service.*;
 
 public class SmartParkingSystem {
-    private final DataAccessComponent dataAccess = new DataAccessComponent(PostgresDB.getInstance());
-    private final ParkingSpotRepository spotRepo = dataAccess.getSpotRepository();
-    private final TariffRepository tariffRepo = dataAccess.getTariffRepository();
-    private final VehicleRepository vehicleRepo = dataAccess.getVehicleRepository();
-    private final ReservationRepository resRepo = dataAccess.getReservationRepository();
+    private final ParkingSpotRepository spotRepo = new ParkingSpotRepository(PostgresDB.getInstance());
+    private final TariffRepository tariffRepo = new TariffRepository(PostgresDB.getInstance());
+    private final VehicleRepository vehicleRepo = new VehicleRepository(PostgresDB.getInstance());
+    private final ReservationRepository resRepo = new ReservationRepository(PostgresDB.getInstance());
     private final ReservationService resService = new ReservationService(spotRepo, vehicleRepo, tariffRepo, resRepo);
     private final PricingService pricingService = new PricingService(resRepo, tariffRepo, spotRepo, vehicleRepo);
     private final ParkingLotManager lotManager = ParkingLotManager.getInstance(spotRepo);
-    private final ReservationComponent reservationComponent = new ReservationComponent(resService);
-    private final PaymentComponent paymentComponent = new PaymentComponent(pricingService);
-    private final MonitoringComponent monitoringComponent = new MonitoringComponent(lotManager);
-    private final ReportingComponent reportingComponent = new ReportingComponent(tariffRepo);
     private final Scanner scanner = new Scanner(System.in);
 
     public void start() {
