@@ -1,18 +1,18 @@
 package MonitoringComponent;
 
 import DataAccessComponent.db.PostgresDB;
-import ReservationComponent.entity.ParkingSpot;
-import ReservationComponent.exception.InvalidVehiclePlateException;
-import ReservationComponent.exception.ReservationException;
+import Domain.entities.ParkingSpot;
+import Domain.exceptions.InvalidVehiclePlateException;
+import Domain.exceptions.ReservationException;
 import java.util.Scanner;
-import ReservationComponent.repository.ParkingSpotRepository;
-import ReservationComponent.exception.NoFreeSpotsException;
-import ReservationComponent.repository.ReservationRepository;
-import PaymentComponent.repository.TariffRepository;
-import ReservationComponent.repository.VehicleRepository;
-import ReservationComponent.service.ParkingLotManager;
-import PaymentComponent.service.PricingService;
-import ReservationComponent.service.ReservationService;
+import DataAccessComponent.repositories.ParkingSpotRepository;
+import Domain.exceptions.NoFreeSpotsException;
+import DataAccessComponent.repositories.ReservationRepository;
+import DataAccessComponent.repositories.TariffRepository;
+import DataAccessComponent.repositories.VehicleRepository;
+import Business.ReservationComponent.ParkingLotManager;
+import Business.PaymentComponent.service.PricingService;
+import Business.ReservationComponent.ReservationService;
 
 public class SmartParkingSystem {
     private final ParkingSpotRepository spotRepo = new ParkingSpotRepository(PostgresDB.getInstance());
